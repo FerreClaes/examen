@@ -27,7 +27,7 @@ void *control(void *vargp)  //extra thread voor controleren online
 {
     char send[30];
     void * pusher = zmq_socket( context, ZMQ_PUSH );
-    zmq_connect( pusher, "localhost" );
+    zmq_connect( pusher, "tcp://192.168.0.198:24041" );
     string push = "weerwolven? >";
     int *id = (int *)vargp;
     push.append("control >");
@@ -36,6 +36,7 @@ void *control(void *vargp)  //extra thread voor controleren online
     while (1)
     {
         delay(60);
+        printf("send \n");
         zmq_send( pusher, send, strlen(send), 0 );
     }
 }
