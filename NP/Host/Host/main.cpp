@@ -30,7 +30,7 @@ void *online(void *vargp)
     char send[30];
     void * pusher = zmq_socket( context, ZMQ_PUSH );
     //zmq_connect( pusher, "tcp://benternet.pxl-ea-ict.be:24041" );
-    zmq_connect( pusher, "localhost" );
+    zmq_connect( pusher, "tcp://192.168.0.198:24041" );
 
     string push = "weerwolven? >offline >";
     while (1)
@@ -45,6 +45,10 @@ void *online(void *vargp)
                 strcpy(send, push.c_str());
                 zmq_send( pusher, send, strlen(send), 0 );
             }
+            control[i] = 0;
+        }
+        for(int i = 0; i < 5; i++)
+        {
             control[i] = 0;
         }
     }
@@ -95,6 +99,7 @@ int main()
     bool weerwolf = true;
     bool heks = true;
     bool restart = false;
+    int koppel[2];
 
     player player1;
     player player2;
@@ -255,6 +260,8 @@ int main()
 
             if (strcmp(command, "koppel") == 0)
             {
+                koppel[0] = stoi(data);
+                koppel[1] = stoi(data2);
                 push.append("koppel >");
                 push.append(data);
                 push.append(" >");
@@ -610,6 +617,40 @@ int main()
                 zmq_send( pusher, send, strlen(send), 0 );
                 push = "weerwolven! >";
                 murder2 = 0;
+            }
+
+            if (murder == koppel[0] || murder2 == koppel[0])
+            {
+                switch (koppel[0])
+                {
+                case 0:
+                    break;
+                case 1:
+                    player1.alive = false;
+                    //murder = 0;
+                    alive--;
+                    break;
+                case 2:
+                    player2.alive = false;
+                    //murder = 0;
+                    alive--;
+                    break;
+                case 3:
+                    player3.alive = false;
+                    //murder = 0;
+                    alive--;
+                    break;
+                case 4:
+                    player4.alive = false;
+                    //murder = 0;
+                    alive--;
+                    break;
+                case 5:
+                    player5.alive = false;
+                    //murder = 0;
+                    alive--;
+                    break;
+                }
             }
 
             switch (murder)
