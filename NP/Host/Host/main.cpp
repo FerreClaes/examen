@@ -6,10 +6,51 @@
 #include <string.h>
 #include "player.h"
 #include <time.h>
+#include <pthread.h>
 
 using namespace std;
+int control[5];
+void delay(int seconds)
+{
+    // Converting time into milli_seconds
+        int milli_seconds = 1000 * seconds;
+
+        // Storing start time
+        clock_t start_time = clock();
+
+        // looping till required time is not achieved
+        while (clock() < start_time + milli_seconds)
+        {}
+}
 
 void * context;
+
+void *online(void *vargp)
+{
+    char send[30];
+    void * pusher = zmq_socket( context, ZMQ_PUSH );
+    //zmq_connect( pusher, "tcp://benternet.pxl-ea-ict.be:24041" );
+    zmq_connect( pusher, "localhost" );
+
+    string push = "weerwolven? >offline >";
+    while (1)
+    {
+        delay(180);
+        for(int i = 0; i < 5; i++)
+        {
+            if (control[i] > 0) {}
+            else
+            {
+                push.append(to_string(i));
+                strcpy(send, push.c_str());
+                zmq_send( pusher, send, strlen(send), 0 );
+            }
+            control[i] = 0;
+        }
+    }
+}
+
+
 
 int getRole();
 int mostFrequent(int arr[], int n);
@@ -26,8 +67,8 @@ int main()
     void * pusher = zmq_socket( context, ZMQ_PUSH );
     void * subscriber = zmq_socket(context, ZMQ_SUB);
 
-    zmq_connect( pusher, "tcp://benternet.pxl-ea-ict.be:24041" );
-    zmq_connect( subscriber, "tcp://benternet.pxl-ea-ict.be:24042" );
+    zmq_connect( pusher, "tcp://192.168.0.198:24041" );
+    zmq_connect( subscriber, "tcp://192.168.0.198:24042" );
 
     zmq_setsockopt(subscriber,ZMQ_SUBSCRIBE,"weerwolven? >", 13);
 
@@ -61,6 +102,8 @@ int main()
     player player4;
     player player5;
     player spectator;
+
+
 
     while (1)
     {
@@ -133,6 +176,7 @@ int main()
                     strcpy(send, push.c_str());
                     zmq_send( pusher, send, strlen(send), 0 );
                     i++;
+                    printf(send);printf("\n");
                     strcpy(name, "");
                     push = "weerwolven! >";
                     break;
@@ -150,6 +194,7 @@ int main()
                     strcpy(send, push.c_str());
                     zmq_send( pusher, send, strlen(send), 0 );
                     i++;
+                    printf(send);printf("\n");
                     push = "weerwolven! >";
                     strcpy(name, "");
                     break;
@@ -167,6 +212,7 @@ int main()
                     strcpy(send, push.c_str());
                     zmq_send( pusher, send, strlen(send), 0 );
                     i++;
+                    printf(send);printf("\n");
                     push = "weerwolven! >";
                     strcpy(name, "");
                     break;
@@ -184,6 +230,7 @@ int main()
                     strcpy(send, push.c_str());
                     zmq_send( pusher, send, strlen(send), 0 );
                     push = "weerwolven! >";
+                    printf(send);printf("\n");
                     strcpy(name, "");
 
                     play = true;
@@ -202,6 +249,8 @@ int main()
                 zmq_send( pusher, send, strlen(send), 0 );
                 push = "weerwolven! >";
                 begin = false;
+                pthread_t tid;
+                pthread_create(&tid, NULL, online, NULL);
             }
 
             if (strcmp(command, "koppel") == 0)
@@ -704,6 +753,11 @@ int main()
                     i = 0;
                     printf("send restart\n");
                 }
+            }
+
+            if (strcmp(command, "control") == 0)
+            {
+                control[stoi(data)-1]++;
             }
 
             if (restart)

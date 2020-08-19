@@ -27,7 +27,7 @@ void *control(void *vargp)  //extra thread voor controleren online
 {
     char send[30];
     void * pusher = zmq_socket( context, ZMQ_PUSH );
-    zmq_connect( pusher, "tcp://benternet.pxl-ea-ict.be:24041" );
+    zmq_connect( pusher, "localhost" );
     string push = "weerwolven? >";
     int *id = (int *)vargp;
     push.append("control >");
@@ -35,7 +35,7 @@ void *control(void *vargp)  //extra thread voor controleren online
     strcpy(send, push.c_str());
     while (1)
     {
-        delay(5);
+        delay(60);
         zmq_send( pusher, send, strlen(send), 0 );
     }
 }
@@ -80,8 +80,9 @@ int main()
     void * pusher = zmq_socket( context, ZMQ_PUSH );
     void * subscriber = zmq_socket(context, ZMQ_SUB);
 
-    zmq_connect( pusher, "tcp://benternet.pxl-ea-ict.be:24041" );
-    zmq_connect( subscriber, "tcp://benternet.pxl-ea-ict.be:24042" );
+    zmq_connect( pusher, "tcp://192.168.0.198:24041" );
+    zmq_connect( subscriber, "tcp://192.168.0.198:24042" );
+
 
     printf("Wat is uw naam? ");                                                     //speler id en role geven
     scanf("%s", name);
@@ -108,42 +109,47 @@ int main()
         memcpy(read, zmq_msg_data(&msg), size);
         zmq_msg_close(&msg);
         read[size] = 0;
-        //printf("%s\n", read);
+        printf("%s\n", read);
         zmq_msg_close (&msg);
 
-        sscanf(read, "%s > %s >%s >%s >%s >%s", subscr, command, data, data2, data3, data4);
+        sscanf(read, "%s >%s >%s >%s >%s >%s", subscr, command, data, data2, data3, data4);
 
         if (strcmp(data, "init") == 0)
         {
+            //printf("init/n");
             if (init == false)
             {
-                sscanf(data2, "%d", &id);
-                sscanf(data3, "%d", &role);
-                pthread_t tid;
-                pthread_create(&tid, NULL, control, (void *)&id);
-                printf("Jouw playerid is %d\n", id);
-                switch (role)
+                //printf(data);
+                if (strcmp(command, name) == 0)
                 {
-                case 0:
-                    printf("jij bent een burger.\n");
-                    break;
-                case 1:
-                    printf("Jij bent een weerwolf.\n");
-                    break;
-                case 2:
-                    printf("Jij bent de heks.\n");
-                    break;
-                case 3:
-                    printf("Jij bent cupido.\n");
-                    break;
-                case 4:
-                    printf("Er zijn al genoeg speler. U bent toeschouwer.");
+                    sscanf(data2, "%d", &id);
+                    sscanf(data3, "%d", &role);
+                    pthread_t tid;
+                    pthread_create(&tid, NULL, control, (void *)&id);
+                    printf("Jouw playerid is %d\n", id);
+                    switch (role)
+                    {
+                    case 0:
+                        printf("jij bent een burger.\n");
+                        break;
+                    case 1:
+                        printf("Jij bent een weerwolf.\n");
+                        break;
+                    case 2:
+                        printf("Jij bent de heks.\n");
+                        break;
+                    case 3:
+                        printf("Jij bent cupido.\n");
+                        break;
+                    case 4:
+                        printf("Er zijn al genoeg speler. U bent toeschouwer.");
+                    }
+                    init = true;
+                    sub = "weerwolven! >";
+                    strcpy(subscribe, sub.c_str());
+                    zmq_setsockopt(subscriber,ZMQ_SUBSCRIBE,subscribe, strlen(subscribe));
+                    printf("Wachten op andere spelers...\n");
                 }
-                init = true;
-                sub = "weerwolven! >";
-                strcpy(subscribe, sub.c_str());
-                zmq_setsockopt(subscriber,ZMQ_SUBSCRIBE,subscribe, strlen(subscribe));
-                printf("Wachten op andere spelers...\n");
             }
         }
 
@@ -418,6 +424,11 @@ int main()
             push = "weerwolven? >";
             init = false;
             restart = false;
+        }
+
+        if (strcmp(command, "offline") == 0)
+        {
+            printf("player%s heeft het spel verlaten.", data);
         }
 
         if (strcmp(command, "endGame") == 0)
