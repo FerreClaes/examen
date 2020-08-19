@@ -32,7 +32,7 @@ void *online(void *vargp)
     //zmq_connect( pusher, "tcp://benternet.pxl-ea-ict.be:24041" );
     zmq_connect( pusher, "tcp://192.168.0.198:24041" );
 
-    string push = "weerwolven? >offline >";
+    string push = "weerwolven! >offline >";
     while (1)
     {
         delay(180);
@@ -41,7 +41,7 @@ void *online(void *vargp)
             if (control[i] > 0) {}
             else
             {
-                push.append(to_string(i));
+                push.append(to_string(i + 1));
                 strcpy(send, push.c_str());
                 zmq_send( pusher, send, strlen(send), 0 );
             }
