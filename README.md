@@ -17,7 +17,7 @@ Weerwolven
 	bevat geen data
   h. Restart!
 	Bevat: uitkomst stemmen voor te restarten
-i. Offline
+  i. Offline
 	Bevat: speler die is geleaved
   j. endGame
 	bevat geen data
