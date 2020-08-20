@@ -10,6 +10,7 @@
 
 using namespace std;
 int control[5];
+bool restart = false;
 void delay(int seconds)
 {
     // Converting time into milli_seconds
@@ -44,9 +45,11 @@ void *online(void *vargp)
                 push.append(to_string(i + 1));
                 strcpy(send, push.c_str());
                 zmq_send( pusher, send, strlen(send), 0 );
+                restart = true;
             }
             control[i] = 0;
         }
+
         for(int i = 0; i < 5; i++)
         {
             control[i] = 0;
@@ -98,7 +101,6 @@ int main()
     int votes[5];
     bool weerwolf = true;
     bool heks = true;
-    bool restart = false;
     int koppel[2];
 
     player player1;
@@ -786,11 +788,11 @@ int main()
                     else if (mostFrequent(votes, 5) == 1)
                     {
                         push.append("restart! >1");
+                        restart = true;
                     }
                     strcpy(send, push.c_str());
                     zmq_send( pusher, send, strlen(send), 0 );
                     push = "weerwolven! >";
-                    restart = true;
                     i = 0;
                     printf("send restart\n");
                 }
@@ -803,6 +805,7 @@ int main()
 
             if (restart)
             {
+                printf("restart\n");
                 i = 0;
                 play = false;
                 begin = true;
@@ -810,6 +813,7 @@ int main()
                 alive = 5;
                 counter = 0;
                 numList.clear();
+                restart = false;
             }
 
             if (weerwolf == false)

@@ -36,7 +36,7 @@ void *control(void *vargp)  //extra thread voor controleren online
     while (1)
     {
         delay(60);
-        printf("send \n");
+        //printf("send \n");
         zmq_send( pusher, send, strlen(send), 0 );
     }
 }
@@ -416,6 +416,13 @@ int main()
             }
         }
 
+        if (strcmp(command, "offline") == 0)
+        {
+            printf("Player%s heeft het spel verlaten.\n", data);
+            printf("Het spel wordt herstart.\n");
+            restart = true;
+        }
+
         if (restart)
         {
             push.append("init >");
@@ -425,11 +432,6 @@ int main()
             push = "weerwolven? >";
             init = false;
             restart = false;
-        }
-
-        if (strcmp(command, "offline") == 0)
-        {
-            printf("player%s heeft het spel verlaten.", data);
         }
 
         if (strcmp(command, "endGame") == 0)
